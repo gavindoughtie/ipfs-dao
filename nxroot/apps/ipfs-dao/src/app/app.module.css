@@ -1,8 +1,11 @@
 .app {
   font-family: sans-serif;
   min-width: 300px;
-  max-width: 600px;
-  margin: 50px auto;
+  margin: 0;
+  padding: 0;
+  background-color: #1351c3;
+  height: 100%;
+  width: 100%;
 }
 
 .app :global(.gutter-left) {
@@ -20,7 +23,7 @@
 }
 
 .app :global(header) {
-  background-color: #143055;
+  background-color: #1351c3;
   color: white;
   padding: 5px;
   border-radius: 3px;

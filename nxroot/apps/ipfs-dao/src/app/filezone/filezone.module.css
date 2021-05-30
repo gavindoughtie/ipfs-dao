@@ -1,0 +1,34 @@
+.filezone {
+  margin: 0;
+  padding: 50px;
+}
+
+p.encrypted,
+p.decrypted {
+  background-color: #fff;
+  color: #000;
+  height: 100px;
+  min-width: 200px;
+  width: 100%;
+  padding: 20px;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.dropAndInstruction {
+  padding: 0;
+  display: grid;
+  grid-template-columns: 25% 75%;
+  grid-template-rows: 100%;
+}
+
+p.description {
+  color: #fff;
+  text-align: start;
+  padding-left: 20px;
+}
+
+.label {
+  color: #fff;
+  padding-inline-end: 20px;
+}
