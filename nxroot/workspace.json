@@ -1,0 +1,129 @@
+{
+  "version": 2,
+  "cli": {
+    "defaultCollection": "@nrwl/react"
+  },
+  "defaultProject": "ipfs-dao",
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "style": "css",
+        "linter": "eslint",
+        "strict": true,
+        "babel": true
+      },
+      "component": {
+        "style": "css"
+      },
+      "library": {
+        "style": "css",
+        "linter": "eslint",
+        "strict": true
+      }
+    }
+  },
+  "projects": {
+    "ipfs-dao": {
+      "root": "apps/ipfs-dao",
+      "sourceRoot": "apps/ipfs-dao/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/ipfs-dao",
+            "index": "apps/ipfs-dao/src/index.html",
+            "main": "apps/ipfs-dao/src/main.tsx",
+            "polyfills": "apps/ipfs-dao/src/polyfills.ts",
+            "tsConfig": "apps/ipfs-dao/tsconfig.app.json",
+            "assets": [
+              "apps/ipfs-dao/src/favicon.ico",
+              "apps/ipfs-dao/src/assets"
+            ],
+            "styles": ["apps/ipfs-dao/src/styles.css"],
+            "scripts": [],
+            "webpackConfig": "@nrwl/react/plugins/webpack"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/ipfs-dao/src/environments/environment.ts",
+                  "with": "apps/ipfs-dao/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/web:dev-server",
+          "options": {
+            "buildTarget": "ipfs-dao:build",
+            "hmr": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "ipfs-dao:build:production",
+              "hmr": false
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/ipfs-dao/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/ipfs-dao"],
+          "options": {
+            "jestConfig": "apps/ipfs-dao/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "ipfs-dao-e2e": {
+      "root": "apps/ipfs-dao-e2e",
+      "sourceRoot": "apps/ipfs-dao-e2e/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/ipfs-dao-e2e/cypress.json",
+            "tsConfig": "apps/ipfs-dao-e2e/tsconfig.e2e.json",
+            "devServerTarget": "ipfs-dao:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "ipfs-dao:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/ipfs-dao-e2e/**/*.{js,ts}"]
+          }
+        }
+      }
+    }
+  }
+}
