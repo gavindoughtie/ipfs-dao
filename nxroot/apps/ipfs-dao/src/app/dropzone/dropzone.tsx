@@ -1,4 +1,4 @@
-import './dropzone.module.css';
+import styles from './dropzone.module.css';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { encryptFile, EncryptedFileResults } from '../helpers/crypto';
@@ -26,16 +26,10 @@ export function Dropzone({ keytext, uploadCallback }: DropzoneProps) {
   }, [keytext, uploadCallback]);
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  const style = {
-    border: '3px solid blue',
-    width: '200px',
-    height: '200px',
-  };
-
   return (
-    <div style={style} { ...getRootProps() }>
+    <div className={styles.dropzone} { ...getRootProps() }>
       <input { ...getInputProps() } />
-      <p>Drag and drop some files here, or click to select files</p>
+      <p>Drag and drop a file here, or click to select a file</p>
     </div>
   )
 }
