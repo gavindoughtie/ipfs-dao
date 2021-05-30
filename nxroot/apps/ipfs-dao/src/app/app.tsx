@@ -1,10 +1,11 @@
 import styles from './app.module.css';
-import { Dropzone } from './dropzone/dropzone';
 import { Filezone } from './filezone/filezone';
 import { ReactComponent as Logo } from './logo.svg';
 import star from './star.svg';
 
-export function App() {
+export interface IAppProps {keytext: string};
+export function App(props: IAppProps) {
+  const keytext = props.keytext;
   return (
     <div className={styles.app}>
       <header className="flex">
@@ -12,8 +13,7 @@ export function App() {
         <h1>Welcome to ipfs-dao!</h1>
       </header>
       <main>
-        <Dropzone />
-        <Filezone />
+        <Filezone keytext={keytext}/>
         <h2>Resources &amp; Tools</h2>
         <p>Thank you for using and showing some ♥ for Nx.</p>
         <div className="flex github-star-container">

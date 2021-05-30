@@ -3,9 +3,15 @@ import * as ReactDOM from 'react-dom';
 
 import App from './app/app';
 
-ReactDOM.render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-  document.getElementById('root')
-);
+import { generateKeyText } from './app/helpers/crypto';
+
+async function init() {
+  const keytext = await generateKeyText();
+  ReactDOM.render(
+    <StrictMode>
+      <App keytext={keytext} />
+    </StrictMode>,
+    document.getElementById('root')
+  );
+}
+init();
