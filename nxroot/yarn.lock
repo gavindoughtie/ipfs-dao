@@ -3360,6 +3360,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bcryptjs@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "@types/bcryptjs@npm:2.4.2"
+  checksum: 91013aa8a5e8185137af1fb011de7f794f5bc71400e0aebba2252985a4d0c5eb4c477617c4aa4c20fdb21f05320ac0095eb8b596c004ff5e3315b656e58a0c72
+  languageName: node
+  linkType: hard
+
 "@types/ed2curve@npm:^0.2.2":
   version: 0.2.2
   resolution: "@types/ed2curve@npm:0.2.2"
@@ -12355,6 +12362,7 @@ fsevents@^1.2.7:
     "@testing-library/react": 11.2.6
     "@textile/hub": ^6.1.2
     "@types/bcrypt": ^5.0.0
+    "@types/bcryptjs": ^2.4.2
     "@types/jest": 26.0.8
     "@types/node": 14.14.33
     "@types/react": 17.0.3

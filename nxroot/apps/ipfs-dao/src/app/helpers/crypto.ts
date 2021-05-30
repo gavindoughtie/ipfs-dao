@@ -1,6 +1,6 @@
 import { PrivateKey } from '@textile/hub';
 import { BigNumber, providers, utils, Signer } from 'ethers';
-import { hashSync } from 'bcrypt';
+import { hashSync } from 'bcryptjs';
 
 export async function generateKey() {
   const key = await window.crypto.subtle.generateKey(
@@ -198,7 +198,7 @@ export async function getAddressAndSigner(): Promise<{
 }
 
 export async function generatePrivateKey(
-  userSecret: string | Buffer
+  userSecret: string
 ): Promise<PrivateKey> {
   const metamask = await getAddressAndSigner();
   // avoid sending the raw secret by hashing it first
