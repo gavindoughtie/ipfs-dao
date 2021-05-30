@@ -22,6 +22,8 @@ export function App(props: IAppProps) {
         setKeytext(key.toString());
         setPrivateKey(key);
       }
+    } else {
+      alert('Please enter a non-empty secret');
     }
   }
   const handleChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) =>
@@ -36,18 +38,25 @@ export function App(props: IAppProps) {
     );
   } else {
     mainUi = (
-      <div className="login">
-        <p>Combine a private secret with Metamask signing to generate ed25519 private key (Enter a secret. View console.)</p>
-        <label htmlFor="loginInput">Human Login</label>
-        <input
-          id="loginInput"
-          name="secret"
-          value={secret}
-          placeholder="Secret"
-          type="password"
-          onChange={handleChange}
-        />
-        <button onClick={() => updatePrivateKey()}>Login with Metamask</button>
+      <div className={styles.login}>
+        <div className={styles.loginForm}>
+          <label htmlFor="loginInput">Log In:</label>
+          <input
+            id="loginInput"
+            name="secret"
+            value={secret}
+            placeholder="Secret"
+            type="password"
+            onChange={handleChange}
+          />
+          <button onClick={() => updatePrivateKey()}>
+            Log In with Metamask
+          </button>
+        </div>
+        <p>
+          Combine a private secret with Metamask signing to generate ed25519
+          private key.
+        </p>
       </div>
     );
   }

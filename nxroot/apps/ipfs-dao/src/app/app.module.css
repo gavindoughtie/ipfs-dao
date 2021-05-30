@@ -6,6 +6,7 @@
   background-color: #1351c3;
   height: 100%;
   width: 100%;
+  color: #fff;
 }
 
 .app :global(.gutter-left) {
@@ -128,4 +129,35 @@
   height: 16px;
   width: 16px;
   margin-right: 4px;
+}
+
+button {
+  background-color: #008;
+  color: #fff;
+  font-size: 24pt;
+  padding: 8pt;
+  border: none;
+}
+
+input {
+  font-size: 24pt;
+  padding: 8pt;
+}
+
+.login {
+  margin: 0 auto;
+  width: 80%;
+  min-height: 200px;
+  display: grid;
+  grid-column: 50% 50%;
+}
+
+.login label {
+  display: block;
+  font-size: 24pt;
+  margin-block-end: 8px;
+}
+
+.loginForm {
+  margin: auto auto;
 }
