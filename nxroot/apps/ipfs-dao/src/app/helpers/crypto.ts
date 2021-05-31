@@ -1,9 +1,15 @@
-import { PrivateKey } from '@textile/hub';
+import { KeyInfo, PrivateKey } from '@textile/hub';
 import { hashSync } from 'bcryptjs';
 import { BigNumber, providers, Signer, utils } from 'ethers';
 
 export const SECRET_KEY = 'ipfs-dao-secret-key';
 export const SIGNED_HASH_STRING_KEY = 'ipfs-dao-signed-hash-key';
+
+export function getKeyInfo(): KeyInfo {
+  return {
+    key: 'bq4maweotdbqntj4tjeg4qstgyq',
+  }
+}
 
 export function loadHashKeyString() {
   return localStorage.getItem(SIGNED_HASH_STRING_KEY);
@@ -24,9 +30,10 @@ export type EncryptResults = {
   encryptedBuffer: ArrayBuffer;
 };
 
-export async function encrypt(buffer: ArrayBuffer, identity: PrivateKey): Promise<Uint8Array> {
+export async function encrypt(buffer: ArrayBuffer, identity: PrivateKey): Promise<ArrayBuffer> {
   const uint8View = new Uint8Array(buffer);
-  return identity.public.encrypt(uint8View);
+  const encryptedArray = await identity.public.encrypt(uint8View);
+  return encryptedArray.buffer;
 }
 
 export type WindowInstanceWithEthereum = Window &

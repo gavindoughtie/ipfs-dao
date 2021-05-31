@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { encrypt } from '../helpers/crypto';
 import styles from './dropzone.module.css';
 
-export interface DropzoneProps {privateKey: PrivateKey, uploadCallback: (results: Uint8Array) => void};
+export interface DropzoneProps {privateKey: PrivateKey, uploadCallback: (results: ArrayBuffer) => void};
 
 export function Dropzone({ privateKey, uploadCallback }: DropzoneProps) {
   const onDrop = useCallback((acceptedFiles: File[]) => {

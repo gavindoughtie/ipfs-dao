@@ -1,13 +1,16 @@
-import { PrivateKey } from '@textile/hub';
+import { Client, PrivateKey } from '@textile/hub';
 import { useState } from 'react';
 import { Dropzone } from '../dropzone/dropzone';
+import { BucketInfo, insertFileBytes } from '../helpers/buckets';
 import styles from './filezone.module.css';
 
 export interface FilezoneProps {
   privateKey: PrivateKey;
+  client: Client;
+  bucketInfo?: BucketInfo;
 }
 
-function resultsToString(results?: Uint8Array) {
+function resultsToString(results?: ArrayBuffer) {
   if (!results) {
     return '';
   }
@@ -15,11 +18,14 @@ function resultsToString(results?: Uint8Array) {
   return btoa(objJsonStr);
 }
 
-export function Filezone({ privateKey }: FilezoneProps) {
-  const [encrypted, setEncrypted] = useState<Uint8Array | undefined>();
+export function Filezone({ privateKey, client, bucketInfo }: FilezoneProps) {
+  const [encrypted, setEncrypted] = useState<ArrayBuffer | undefined>();
   const [decrypted, setDecrypted] = useState('');
 
-  function uploadCallback(results?: Uint8Array) {
+  async function uploadCallback(results?: ArrayBuffer) {
+    if (results && bucketInfo?.buckets) {
+      await insertFileBytes(bucketInfo.buckets, bucketInfo?.bucketKey, results, `${new Date()}`);
+    }
     setEncrypted(results);
   }
 
@@ -32,7 +38,7 @@ export function Filezone({ privateKey }: FilezoneProps) {
 
   const decryptBuffer = async () => {
     if (encrypted) {
-      const decryptedObj = await decryptResults(privateKey, encrypted);
+      const decryptedObj = await decryptResults(privateKey, new Uint8Array(encrypted));
       setDecrypted(new TextDecoder().decode(decryptedObj));
     }
   };
@@ -41,12 +47,15 @@ export function Filezone({ privateKey }: FilezoneProps) {
     <div className={styles.filezone}>
       <div className={styles.dropAndInstruction}>
         <Dropzone uploadCallback={uploadCallback} privateKey={privateKey} />
-        <p className={styles.description}>
+        <div className={styles.description}>
           IPFS-DAO encrypts files locally using web crypto before uploading them
           to IPFS. Individuals may then purchase access to files and will
           receive bespoke downloads encrypted with the public key that
           accompanies their payment, administered via an Ethereum contract.
-        </p>
+          <h3>Bucket Info</h3>
+          <p>{bucketInfo?.bucketKey}</p>
+          <p>{JSON.stringify(bucketInfo?.buckets)}</p>
+        </div>
       </div>
       <div className={styles.outputs}>
         <p className={styles.encrypted}>{resultsToString(encrypted)}</p>

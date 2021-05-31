@@ -1,20 +1,53 @@
-import { PrivateKey } from '@textile/hub';
+import { Client, PrivateKey } from '@textile/hub';
 import { ChangeEvent, ChangeEventHandler, useState } from 'react';
 import logo from '../assets/IPFS-DAO-Logo.png';
 import styles from './app.module.css';
 import { Filezone } from './filezone/filezone';
-import { loadPrivateKey, clearPrivateKey } from './helpers/crypto';
+import { getKeyInfo, loadPrivateKey, clearPrivateKey } from './helpers/crypto';
+import { auth, BucketInfo, setupBuckets } from './helpers/buckets';
 
 export function App(props: { privateKey?: PrivateKey }) {
   const [secret, setSecret] = useState('');
   const [loggedOut, setLoggedOut] = useState(false);
   const pkState = useState<PrivateKey>();
+  const [client, setClient] = useState<Client>();
+  const clState = useState(false);
+  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+  let clientLoading = clState[0];
+  const setClientLoading = clState[1];
+
   let privateKey = pkState[0];
   const setPrivateKey = pkState[1];
-  if (!loggedOut && !privateKey && props.privateKey) {
-    privateKey = props.privateKey;
-    setPrivateKey(props.privateKey);
+
+  const keyInfo = getKeyInfo();
+
+  async function loadClient() {
+    if (clientLoading) {
+      return;
+    }
+    if (privateKey) {
+      clientLoading = true;
+      setClientLoading(true);
+      const loadedClient = await auth(keyInfo, privateKey);
+      console.dir(loadedClient);
+      clientLoading = false;
+      const setupBucketInfo = await setupBuckets(keyInfo, privateKey);
+      setBucketInfo(setupBucketInfo);
+      setClient(loadedClient);
+      setClientLoading(false);      
+    }
   }
+
+  if (!loggedOut) {
+    if (!privateKey && props.privateKey) {
+      privateKey = props.privateKey;
+      setPrivateKey(props.privateKey);
+    }
+    if (privateKey && !client && !clientLoading) {
+      loadClient();
+    }
+  }
+
   async function updatePrivateKey() {
     if (secret) {
       loadPrivateKey(secret, setPrivateKey);
@@ -33,10 +66,12 @@ export function App(props: { privateKey?: PrivateKey }) {
     setSecret(e.target?.value);
 
   let mainUi;
-  if (privateKey) {
+  if (!client && clientLoading) {
+    return <main><h1 className={styles.loading}>[IPFS-DAO]</h1></main>;
+  } else if (privateKey && client) {
     mainUi = (
       <main>
-        <Filezone privateKey={privateKey} />
+        <Filezone privateKey={privateKey} client={client} bucketInfo={bucketInfo} />
       </main>
     );
   } else {
@@ -63,7 +98,8 @@ export function App(props: { privateKey?: PrivateKey }) {
       </main>
     );
   }
-  const logoutButton = privateKey && !loggedOut ? (<button onClick={logout}>Log out</button>) : null;
+  const logoutButton =
+    privateKey && !loggedOut ? <button onClick={logout}>Log out</button> : null;
   return (
     <div className={styles.app}>
       <header className="flex">

@@ -166,3 +166,17 @@ input {
   overflow-x: hidden;
   text-align: center;
 }
+
+.loading {
+  font-family: sans-serif;
+  text-align: center;
+  width: 500px;
+  margin: 0 auto;
+  height: 500px;
+  display: block;
+  padding-block-start: 30vh;
+}
+
+.loading::after {
+  content: 'Loading...';
+}
