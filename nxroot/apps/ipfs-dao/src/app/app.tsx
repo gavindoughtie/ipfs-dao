@@ -5,9 +5,15 @@ import styles from './app.module.css';
 import { Filezone } from './filezone/filezone';
 import { loadPrivateKey } from './helpers/crypto';
 
-export function App() {
+export function App(props: { privateKey?: PrivateKey }) {
   const [secret, setSecret] = useState('');
-  const [privateKey, setPrivateKey] = useState<PrivateKey>();
+  const pkState = useState<PrivateKey>();
+  let privateKey = pkState[0];
+  const setPrivateKey = pkState[1];
+  if (!privateKey && props.privateKey) {
+    privateKey = props.privateKey;
+    setPrivateKey(props.privateKey);
+  }
   async function updatePrivateKey() {
     if (secret) {
       loadPrivateKey(secret, setPrivateKey);
@@ -15,6 +21,7 @@ export function App() {
       alert('Please enter a non-empty secret');
     }
   }
+
   const handleChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) =>
     setSecret(e.target?.value);
 
@@ -22,7 +29,6 @@ export function App() {
   if (privateKey) {
     mainUi = (
       <main>
-        <h1>{privateKey?.toString()}</h1>
         <Filezone privateKey={privateKey} />
       </main>
     );
@@ -53,8 +59,9 @@ export function App() {
   return (
     <div className={styles.app}>
       <header className="flex">
-        <img src={logo} alt="ipfs dao logo"></img>
+        <img src={logo} width="460" height="179" alt="ipfs dao logo"></img>
       </header>
+      <p className={styles.keyDisplay}>{privateKey?.toString()}</p>
       {mainUi}
     </div>
   );

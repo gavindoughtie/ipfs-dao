@@ -124,18 +124,21 @@ export async function getAddressAndSigner(): Promise<{
 
 export async function loadPrivateKey(
   userSecret: string | undefined,
-  setKey: (privateKey: PrivateKey) => void
+  setKey: (privateKey?: PrivateKey) => void
 ) {
   // Do we have a key in storage?
   let hashKeyString = loadHashKeyString();
   if (!hashKeyString && userSecret) {
     hashKeyString = await signedHashString(userSecret);
+    storeHashKeyString(hashKeyString);
   }
   if (hashKeyString) {
     const privateKey = await privateKeyFromHashString(hashKeyString);
     if (privateKey) {
       setKey(privateKey);
     }
+  } else {
+    setKey(undefined)
   }
 }
 

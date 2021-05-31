@@ -34,10 +34,6 @@
   padding: 0 36px;
 }
 
-.app :global(p) {
-  text-align: center;
-}
-
 .app :global(h1) {
   text-align: center;
   margin-left: 18px;
@@ -160,4 +156,13 @@ input {
 
 .loginForm {
   margin: auto auto;
+}
+
+.keyDisplay {
+  word-wrap: break-word;
+  overflow-y: auto;
+  font-size: 8pt;
+  max-height: 60px;
+  overflow-x: hidden;
+  text-align: center;
 }
