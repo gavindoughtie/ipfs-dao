@@ -1,7 +1,11 @@
 import { Client, PrivateKey } from '@textile/hub';
 import { useState } from 'react';
 import { Dropzone } from '../dropzone/dropzone';
-import { BucketInfo, insertFileBytes } from '../helpers/buckets';
+import {
+  BucketInfo,
+  insertFileBytes,
+  getUniqueFilePath,
+} from '../helpers/buckets';
 import styles from './filezone.module.css';
 
 export interface FilezoneProps {
@@ -24,7 +28,12 @@ export function Filezone({ privateKey, client, bucketInfo }: FilezoneProps) {
 
   async function uploadCallback(results?: ArrayBuffer) {
     if (results && bucketInfo?.buckets) {
-      await insertFileBytes(bucketInfo.buckets, bucketInfo?.bucketKey, results, `${new Date()}`);
+      await insertFileBytes(
+        bucketInfo.buckets,
+        bucketInfo?.bucketKey,
+        results,
+        getUniqueFilePath(privateKey)
+      );
     }
     setEncrypted(results);
   }
@@ -38,7 +47,10 @@ export function Filezone({ privateKey, client, bucketInfo }: FilezoneProps) {
 
   const decryptBuffer = async () => {
     if (encrypted) {
-      const decryptedObj = await decryptResults(privateKey, new Uint8Array(encrypted));
+      const decryptedObj = await decryptResults(
+        privateKey,
+        new Uint8Array(encrypted)
+      );
       setDecrypted(new TextDecoder().decode(decryptedObj));
     }
   };
