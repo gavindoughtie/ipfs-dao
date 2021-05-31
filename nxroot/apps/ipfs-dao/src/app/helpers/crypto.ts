@@ -1,82 +1,19 @@
 import { PrivateKey } from '@textile/hub';
-import { BigNumber, providers, utils, Signer } from 'ethers';
 import { hashSync } from 'bcryptjs';
+import { BigNumber, providers, Signer, utils } from 'ethers';
 
-export const LOCAL_STORAGE_KEY = 'ipfs-dao-key';
-export const LOCAL_STORAGE_SECRET_KEY = 'ipfs-dao-secret-key';
-export const LOCAL_STORAGE_ED25519_KEY = 'ipfs-dao-ed25519-key';
-export const LOCAL_STORAGE_SIGNED_HASH_STRING_KEY = 'ipfs-dao-signed-hash-key';
-
-// function hashSync(input: string, bits: number): string {
-//   return input + bits;
-// }
-
-export function loadSecret(
-  setSecretFn: (secretString: string) => void
-): string | null {
-  const localSecret = localStorage.getItem(LOCAL_STORAGE_SECRET_KEY);
-  if (localSecret) {
-    setSecretFn(localSecret);
-  }
-  return localSecret;
-}
-
-export function storeSecret(value: string) {
-  localStorage.setItem(LOCAL_STORAGE_SECRET_KEY, value);
-}
+export const SECRET_KEY = 'ipfs-dao-secret-key';
+export const SIGNED_HASH_STRING_KEY = 'ipfs-dao-signed-hash-key';
 
 export function loadHashKeyString() {
-  return localStorage.getItem(LOCAL_STORAGE_SIGNED_HASH_STRING_KEY);
+  return localStorage.getItem(SIGNED_HASH_STRING_KEY);
 }
 
 export function storeHashKeyString(hashKeyString: string) {
   return localStorage.setItem(
-    LOCAL_STORAGE_SIGNED_HASH_STRING_KEY,
+    SIGNED_HASH_STRING_KEY,
     hashKeyString
   );
-}
-
-export async function generateKey() {
-  const key = await window.crypto.subtle.generateKey(
-    {
-      name: 'AES-GCM',
-      length: 256,
-    },
-    true,
-    ['encrypt', 'decrypt']
-  );
-  return key;
-}
-
-async function exportCryptoKey(key: CryptoKey) {
-  const exported = await window.crypto.subtle.exportKey('jwk', key);
-  return JSON.stringify(exported, null, ' ');
-}
-
-export async function loadCryptoKey(keytext: string) {
-  const keyobj = JSON.parse(keytext);
-  return crypto.subtle.importKey('jwk', keyobj, 'AES-GCM', true, [
-    'encrypt',
-    'decrypt',
-  ]);
-}
-
-export async function cryptoKeyForPrivateKey(
-  privateKey: PrivateKey,
-  setCryptoKeyFunction?: (cryptoKey: CryptoKey) => void
-): Promise<CryptoKey> {
-  // What to do here???
-  const cryptoKey = {} as CryptoKey;
-  if (setCryptoKeyFunction) {
-    setCryptoKeyFunction(cryptoKey);
-  }
-  return cryptoKey;
-}
-
-export async function generateKeyText() {
-  const key = await generateKey();
-  const keyText = await exportCryptoKey(key);
-  return keyText;
 }
 
 export type EncryptResults = {
@@ -87,65 +24,6 @@ export type EncryptResults = {
 export async function encrypt(buffer: ArrayBuffer, identity: PrivateKey): Promise<Uint8Array> {
   const uint8View = new Uint8Array(buffer);
   return identity.public.encrypt(uint8View);
-}
-
-// encrypt the ArrayBuffer and return
-// the encrypted contents and the random iv key for the
-// Galois encryption algo
-export async function browserEncrypt(
-  buffer: ArrayBuffer,
-  key: CryptoKey
-): Promise<EncryptResults> {
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
-  const encryptParams: AesGcmParams = {
-    name: 'AES-GCM',
-    iv,
-  };
-  const encryptedBuffer = await window.crypto.subtle.encrypt(
-    encryptParams,
-    key,
-    buffer
-  );
-
-  return {
-    iv,
-    encryptedBuffer,
-  };
-}
-
-export type EncryptedFileResults = EncryptResults & {
-  key: string;
-};
-
-// export async function encryptFile(
-//   fileBuffer: ArrayBuffer,
-//   cryptoKey: CryptoKey
-// ): Promise<EncryptResults> {
-//   // Encrypt the file
-//   // /* eslint-disable-next-line */
-//   // const jwk = JSON.parse(keytext);
-//   // const cryptoKey = await crypto.subtle.importKey('jwk', jwk, 'AES-GCM', true, [
-//   //   'encrypt',
-//   //   'decrypt',
-//   // ]);
-//   const encryptionResult = await encrypt(fileBuffer, cryptoKey);
-//   return encryptionResult;
-// }
-
-export async function decrypt(
-  buffer: ArrayBuffer,
-  key: CryptoKey,
-  iv: Uint8Array
-): Promise<ArrayBuffer> {
-  const decrypted = await window.crypto.subtle.decrypt(
-    {
-      name: 'AES-GCM',
-      iv,
-    },
-    key,
-    buffer
-  );
-  return decrypted;
 }
 
 export type WindowInstanceWithEthereum = Window &

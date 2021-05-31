@@ -1,10 +1,8 @@
-import styles from './filezone.module.css';
+import { PrivateKey } from '@textile/hub';
 import { useState } from 'react';
 import { Dropzone } from '../dropzone/dropzone';
-import { decrypt, EncryptResults } from '../helpers/crypto';
-import { PrivateKey } from '@textile/hub';
+import styles from './filezone.module.css';
 
-/* eslint-disable-next-line */
 export interface FilezoneProps {
   privateKey: PrivateKey;
 }
@@ -30,20 +28,6 @@ export function Filezone({ privateKey }: FilezoneProps) {
     resultsObject: Uint8Array
   ) {
     return privateKey.decrypt(resultsObject);
-  }
-
-  async function olddecryptResults(
-    privateKey: CryptoKey,
-    resultsObject?: EncryptResults
-  ) {
-    if (resultsObject) {
-      const decryptedObj = await decrypt(
-        resultsObject.encryptedBuffer,
-        privateKey,
-        resultsObject.iv
-      );
-      setDecrypted(new TextDecoder().decode(decryptedObj));
-    }
   }
 
   const decryptBuffer = async () => {

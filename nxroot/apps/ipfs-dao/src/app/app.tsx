@@ -1,31 +1,16 @@
+import { PrivateKey } from '@textile/hub';
+import { ChangeEvent, ChangeEventHandler, useState } from 'react';
+import logo from '../assets/IPFS-DAO-Logo.png';
 import styles from './app.module.css';
 import { Filezone } from './filezone/filezone';
-import logo from '../assets/IPFS-DAO-Logo.png';
-import { cryptoKeyForPrivateKey, loadPrivateKey, storeSecret } from './helpers/crypto';
-import { useState, ChangeEventHandler, ChangeEvent } from 'react';
-import { PrivateKey } from '@textile/hub';
+import { loadPrivateKey } from './helpers/crypto';
 
 export function App() {
   const [secret, setSecret] = useState('');
-  const [keytext, setKeytext] = useState('');
   const [privateKey, setPrivateKey] = useState<PrivateKey>();
-  // const [cryptoKey, setCryptoKey] = useState<CryptoKey>();
-
-  // if (privateKey && !cryptoKey) {
-  //   cryptoKeyForPrivateKey(privateKey, setCryptoKey);
-  // }
-
-  // const keytext = props.keytext;
   async function updatePrivateKey() {
     if (secret) {
       loadPrivateKey(secret, setPrivateKey);
-      // storeSecret(secret);
-      // const key = await generatePrivateKey(secret);
-      // console.log(`key: ${key}`);
-      // if (key) {
-      //   setKeytext(key.toString());
-      //   setPrivateKey(key);
-      // }
     } else {
       alert('Please enter a non-empty secret');
     }
@@ -37,12 +22,13 @@ export function App() {
   if (privateKey) {
     mainUi = (
       <main>
+        <h1>{privateKey?.toString()}</h1>
         <Filezone privateKey={privateKey} />
       </main>
     );
   } else {
     mainUi = (
-      <div className={styles.login}>
+      <main className={styles.login}>
         <div className={styles.loginForm}>
           <label htmlFor="loginInput">Log In:</label>
           <input
@@ -61,7 +47,7 @@ export function App() {
           Combine a private secret with Metamask signing to generate ed25519
           private key.
         </p>
-      </div>
+      </main>
     );
   }
   return (
@@ -69,7 +55,6 @@ export function App() {
       <header className="flex">
         <img src={logo} alt="ipfs dao logo"></img>
       </header>
-      <h1>{keytext}</h1>
       {mainUi}
     </div>
   );

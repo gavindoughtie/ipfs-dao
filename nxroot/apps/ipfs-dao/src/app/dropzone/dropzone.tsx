@@ -1,10 +1,9 @@
-import styles from './dropzone.module.css';
+import { PrivateKey } from '@textile/crypto';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { encrypt } from '../helpers/crypto';
-import { PrivateKey } from '@textile/crypto';
+import styles from './dropzone.module.css';
 
-/* eslint-disable-next-line */
 export interface DropzoneProps {privateKey: PrivateKey, uploadCallback: (results: Uint8Array) => void};
 
 export function Dropzone({ privateKey, uploadCallback }: DropzoneProps) {
@@ -15,9 +14,8 @@ export function Dropzone({ privateKey, uploadCallback }: DropzoneProps) {
       reader.onabort = () => console.log('file reading was aborted');
       reader.onerror = () => console.log('file reading has failed');
       reader.onload = async () => {
-        /* eslint-disable-next-line */
-        const fileContents: ArrayBuffer | null = reader.result as any;
-        if (fileContents) {
+        const fileContents = reader.result;
+        if (fileContents && typeof fileContents !== 'string') {
           const encryptResults = await encrypt(fileContents, privateKey);
           uploadCallback(encryptResults);
         }
