@@ -9,7 +9,10 @@ export function loadHashKeyString() {
   return localStorage.getItem(SIGNED_HASH_STRING_KEY);
 }
 
-export function storeHashKeyString(hashKeyString: string) {
+export function storeHashKeyString(hashKeyString?: string) {
+  if (!hashKeyString) {
+    return localStorage.removeItem(SIGNED_HASH_STRING_KEY);
+  }
   return localStorage.setItem(
     SIGNED_HASH_STRING_KEY,
     hashKeyString
@@ -120,6 +123,10 @@ export async function getAddressAndSigner(): Promise<{
   const address = new EthereumAddress(accounts[0]);
 
   return { address, signer };
+}
+
+export function clearPrivateKey() {
+  storeHashKeyString(undefined);
 }
 
 export async function loadPrivateKey(
