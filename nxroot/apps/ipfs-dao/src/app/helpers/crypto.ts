@@ -2,6 +2,40 @@ import { PrivateKey } from '@textile/hub';
 import { BigNumber, providers, utils, Signer } from 'ethers';
 import { hashSync } from 'bcryptjs';
 
+export const LOCAL_STORAGE_KEY = 'ipfs-dao-key';
+export const LOCAL_STORAGE_SECRET_KEY = 'ipfs-dao-secret-key';
+export const LOCAL_STORAGE_ED25519_KEY = 'ipfs-dao-ed25519-key';
+export const LOCAL_STORAGE_SIGNED_HASH_STRING_KEY = 'ipfs-dao-signed-hash-key';
+
+// function hashSync(input: string, bits: number): string {
+//   return input + bits;
+// }
+
+export function loadSecret(
+  setSecretFn: (secretString: string) => void
+): string | null {
+  const localSecret = localStorage.getItem(LOCAL_STORAGE_SECRET_KEY);
+  if (localSecret) {
+    setSecretFn(localSecret);
+  }
+  return localSecret;
+}
+
+export function storeSecret(value: string) {
+  localStorage.setItem(LOCAL_STORAGE_SECRET_KEY, value);
+}
+
+export function loadHashKeyString() {
+  return localStorage.getItem(LOCAL_STORAGE_SIGNED_HASH_STRING_KEY);
+}
+
+export function storeHashKeyString(hashKeyString: string) {
+  return localStorage.setItem(
+    LOCAL_STORAGE_SIGNED_HASH_STRING_KEY,
+    hashKeyString
+  );
+}
+
 export async function generateKey() {
   const key = await window.crypto.subtle.generateKey(
     {
@@ -27,21 +61,38 @@ export async function loadCryptoKey(keytext: string) {
   ]);
 }
 
+export async function cryptoKeyForPrivateKey(
+  privateKey: PrivateKey,
+  setCryptoKeyFunction?: (cryptoKey: CryptoKey) => void
+): Promise<CryptoKey> {
+  // What to do here???
+  const cryptoKey = {} as CryptoKey;
+  if (setCryptoKeyFunction) {
+    setCryptoKeyFunction(cryptoKey);
+  }
+  return cryptoKey;
+}
+
 export async function generateKeyText() {
   const key = await generateKey();
   const keyText = await exportCryptoKey(key);
   return keyText;
 }
 
-type EncryptResults = {
+export type EncryptResults = {
   iv: Uint8Array;
   encryptedBuffer: ArrayBuffer;
 };
 
+export async function encrypt(buffer: ArrayBuffer, identity: PrivateKey): Promise<Uint8Array> {
+  const uint8View = new Uint8Array(buffer);
+  return identity.public.encrypt(uint8View);
+}
+
 // encrypt the ArrayBuffer and return
 // the encrypted contents and the random iv key for the
 // Galois encryption algo
-export async function encrypt(
+export async function browserEncrypt(
   buffer: ArrayBuffer,
   key: CryptoKey
 ): Promise<EncryptResults> {
@@ -66,24 +117,20 @@ export type EncryptedFileResults = EncryptResults & {
   key: string;
 };
 
-export async function encryptFile(
-  fileBuffer: ArrayBuffer,
-  keytext: string
-): Promise<EncryptedFileResults> {
-  // Encrypt the file
-  /* eslint-disable-next-line */
-  const jwk = JSON.parse(keytext);
-  const cryptoKey = await crypto.subtle.importKey('jwk', jwk, 'AES-GCM', true, [
-    'encrypt',
-    'decrypt',
-  ]);
-  const encryptionResult = await encrypt(fileBuffer, cryptoKey);
-  const key = await exportCryptoKey(cryptoKey);
-  return {
-    key,
-    ...encryptionResult,
-  };
-}
+// export async function encryptFile(
+//   fileBuffer: ArrayBuffer,
+//   cryptoKey: CryptoKey
+// ): Promise<EncryptResults> {
+//   // Encrypt the file
+//   // /* eslint-disable-next-line */
+//   // const jwk = JSON.parse(keytext);
+//   // const cryptoKey = await crypto.subtle.importKey('jwk', jwk, 'AES-GCM', true, [
+//   //   'encrypt',
+//   //   'decrypt',
+//   // ]);
+//   const encryptionResult = await encrypt(fileBuffer, cryptoKey);
+//   return encryptionResult;
+// }
 
 export async function decrypt(
   buffer: ArrayBuffer,
@@ -197,9 +244,24 @@ export async function getAddressAndSigner(): Promise<{
   return { address, signer };
 }
 
-export async function generatePrivateKey(
-  userSecret: string
-): Promise<PrivateKey> {
+export async function loadPrivateKey(
+  userSecret: string | undefined,
+  setKey: (privateKey: PrivateKey) => void
+) {
+  // Do we have a key in storage?
+  let hashKeyString = loadHashKeyString();
+  if (!hashKeyString && userSecret) {
+    hashKeyString = await signedHashString(userSecret);
+  }
+  if (hashKeyString) {
+    const privateKey = await privateKeyFromHashString(hashKeyString);
+    if (privateKey) {
+      setKey(privateKey);
+    }
+  }
+}
+
+export async function signedHashString(userSecret: string): Promise<string> {
   const metamask = await getAddressAndSigner();
   // avoid sending the raw secret by hashing it first
   const secret = hashSync(userSecret, 10);
@@ -209,7 +271,19 @@ export async function generatePrivateKey(
     secret
   );
   const signedText = await metamask.signer.signMessage(message);
-  const hashString = utils.keccak256(signedText);
+  return utils.keccak256(signedText);
+}
+
+export async function generatePrivateKey(
+  userSecret: string
+): Promise<PrivateKey> {
+  const hashString = await signedHashString(userSecret);
+  return privateKeyFromHashString(hashString);
+}
+
+export async function privateKeyFromHashString(
+  hashString: string
+): Promise<PrivateKey> {
   let hashArray: number[] = [];
   if (!hashString) {
     throw new Error(

@@ -2,6 +2,9 @@
   "name": "nxroot",
   "version": "0.0.0",
   "license": "MIT",
+  "browser": {
+    "crypto": false
+  },
   "scripts": {
     "nx": "nx",
     "start": "nx serve",

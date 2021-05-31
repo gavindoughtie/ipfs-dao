@@ -13,6 +13,7 @@ p.decrypted {
   padding: 20px;
   word-wrap: break-word;
   text-align: left;
+  overflow-y: auto;
 }
 
 .dropAndInstruction {

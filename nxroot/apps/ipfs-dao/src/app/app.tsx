@@ -1,27 +1,31 @@
 import styles from './app.module.css';
 import { Filezone } from './filezone/filezone';
 import logo from '../assets/IPFS-DAO-Logo.png';
-import { generatePrivateKey } from './helpers/crypto';
+import { cryptoKeyForPrivateKey, loadPrivateKey, storeSecret } from './helpers/crypto';
 import { useState, ChangeEventHandler, ChangeEvent } from 'react';
 import { PrivateKey } from '@textile/hub';
 
-export interface IAppProps {
-  keytext: string;
-}
-export function App(props: IAppProps) {
+export function App() {
   const [secret, setSecret] = useState('');
   const [keytext, setKeytext] = useState('');
   const [privateKey, setPrivateKey] = useState<PrivateKey>();
+  // const [cryptoKey, setCryptoKey] = useState<CryptoKey>();
+
+  // if (privateKey && !cryptoKey) {
+  //   cryptoKeyForPrivateKey(privateKey, setCryptoKey);
+  // }
+
   // const keytext = props.keytext;
   async function updatePrivateKey() {
-    console.log('updatePrivateKey');
     if (secret) {
-      const key = await generatePrivateKey(secret);
-      console.log(`key: ${key}`);
-      if (key) {
-        setKeytext(key.toString());
-        setPrivateKey(key);
-      }
+      loadPrivateKey(secret, setPrivateKey);
+      // storeSecret(secret);
+      // const key = await generatePrivateKey(secret);
+      // console.log(`key: ${key}`);
+      // if (key) {
+      //   setKeytext(key.toString());
+      //   setPrivateKey(key);
+      // }
     } else {
       alert('Please enter a non-empty secret');
     }
@@ -33,7 +37,7 @@ export function App(props: IAppProps) {
   if (privateKey) {
     mainUi = (
       <main>
-        <Filezone keytext={keytext} />
+        <Filezone privateKey={privateKey} />
       </main>
     );
   } else {
