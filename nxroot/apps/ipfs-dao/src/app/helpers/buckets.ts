@@ -1,13 +1,15 @@
 // Utilities for working with textile buckets
 import {
   Buckets,
-  BuckMetadata,
+  // BuckMetadata,
   Client,
   Identity,
   KeyInfo,
   PrivateKey,
   PushPathResult,
 } from '@textile/hub';
+
+import { encrypt } from './crypto';
 
 export interface BucketInfo {
   buckets: Buckets;
@@ -44,7 +46,7 @@ export async function setupBuckets(
   };
 }
 
-export function insertFile(
+export function xinsertFile(
   buckets: Buckets,
   bucketKey: string,
   file: File,
@@ -65,43 +67,69 @@ export function insertFile(
   });
 }
 
+export async function encryptAndInsertFile(
+  buckets: Buckets,
+  bucketKey: string,
+  path: string,
+  file: File,
+  privateKey: PrivateKey
+): Promise<PushPathResult> {
+  const bytes = await encryptFile(file, privateKey);
+  return insertFileBytes(buckets, bucketKey, bytes, path);
+}
+
+export async function encryptFile(
+  file: File,
+  privateKey: PrivateKey
+): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onabort = () => reject('file reading was aborted');
+    reader.onerror = () => reject('file reading has failed');
+    reader.onload = async () => {
+      const fileContents = reader.result;
+      if (fileContents && typeof fileContents !== 'string') {
+        resolve(encrypt(fileContents, privateKey));
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+export type FileCallbackFn = (files: File[]) => void;
+export type FileCallbackHandler = (uploading: Promise<PushPathResult>[]) => void;
+export function makeFileCallback(
+  buckets: Buckets,
+  bucketKey: string,
+  privateKey: PrivateKey,
+  handler: FileCallbackHandler
+): FileCallbackFn {
+  return (acceptedFiles: File[]) => {
+    const pendingUploads: Promise<PushPathResult>[] = [];
+    acceptedFiles.forEach((file) => {
+      pendingUploads.push(
+        encryptAndInsertFile(
+          buckets,
+          bucketKey,
+          getUniqueFilePath(privateKey),
+          file,
+          privateKey
+        )
+      );
+    });
+    handler(pendingUploads);
+  };
+}
+
 export async function insertFileBytes(
   buckets: Buckets,
   bucketKey: string,
   binaryStr: string | ArrayBuffer | null,
   path: string
 ): Promise<PushPathResult> {
-  try {
-    const result = await buckets.pushPath(bucketKey, path, binaryStr);
-    // eslint-disable-next-line
-    debugger;
-    return result;
-  } catch (e) {
-    // eslint-disable-next-line
-    debugger;
-    console.dir(e);
-    console.error(e);
-  }
-}
-
-/*
- * @example
- * Create a Bucket called "app-name-files"
- * ```typescript
- * import { Buckets, UserAuth } from '@textile/hub'
- *
- * const open = async (auth: UserAuth, name: string) => {
- *     const buckets = Buckets.withUserAuth(auth)
- *     const { root, threadID } = await buckets.getOrCreate(name)
- *     return { buckets, root, threadID }
- * }
- * ```
- */
-export async function makeBucket(
-  privateKey: PrivateKey,
-  metadata: BuckMetadata
-) {
-  // createUserAuth()
+  return buckets.pushPath(bucketKey, path, binaryStr);
 }
 
 async function authorize(key: KeyInfo, identity: Identity) {

@@ -4,10 +4,16 @@ import { BigNumber, providers, Signer, utils } from 'ethers';
 
 export const SECRET_KEY = 'ipfs-dao-secret-key';
 export const SIGNED_HASH_STRING_KEY = 'ipfs-dao-signed-hash-key';
+export const API_KEY_KEY = 'ipfs-dao-api-key';
+
+let apiKey: string;
 
 export function getKeyInfo(): KeyInfo {
+  if (!apiKey) {
+    apiKey = getApiKey() ?? '';
+  }
   return {
-    key: 'bq4maweotdbqntj4tjeg4qstgyq',
+    key: apiKey
   }
 }
 
@@ -23,6 +29,14 @@ export function storeHashKeyString(hashKeyString?: string) {
     SIGNED_HASH_STRING_KEY,
     hashKeyString
   );
+}
+
+export function storeApiKey(apiKey: string) {
+  localStorage.setItem(API_KEY_KEY, apiKey);
+}
+
+export function getApiKey() {
+  return localStorage.getItem(API_KEY_KEY);
 }
 
 export type EncryptResults = {

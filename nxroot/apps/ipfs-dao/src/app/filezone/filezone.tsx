@@ -1,17 +1,18 @@
-import { Client, PrivateKey } from '@textile/hub';
+import { Client, PrivateKey, PushPathResult } from '@textile/hub';
 import { useState } from 'react';
 import { Dropzone } from '../dropzone/dropzone';
 import {
   BucketInfo,
   insertFileBytes,
   getUniqueFilePath,
+  makeFileCallback,
 } from '../helpers/buckets';
 import styles from './filezone.module.css';
 
 export interface FilezoneProps {
   privateKey: PrivateKey;
   client: Client;
-  bucketInfo?: BucketInfo;
+  bucketInfo: BucketInfo;
 }
 
 function resultsToString(results?: ArrayBuffer) {
@@ -26,24 +27,20 @@ export function Filezone({ privateKey, client, bucketInfo }: FilezoneProps) {
   const [encrypted, setEncrypted] = useState<ArrayBuffer | undefined>();
   const [decrypted, setDecrypted] = useState('');
 
-  async function uploadCallback(results?: ArrayBuffer) {
-    if (results && bucketInfo?.buckets) {
-      await insertFileBytes(
-        bucketInfo.buckets,
-        bucketInfo?.bucketKey,
-        results,
-        getUniqueFilePath(privateKey)
-      );
-    }
-    setEncrypted(results);
-  }
-
   async function decryptResults(
     privateKey: PrivateKey,
     resultsObject: Uint8Array
   ) {
     return privateKey.decrypt(resultsObject);
   }
+
+  const handler = async (uploading: Promise<PushPathResult>[]) => {
+    const results = await Promise.all(uploading);
+    console.dir(results);
+    alert(`${results?.length ?? 0} files uploaded`);
+  };
+
+  const fileCallback = makeFileCallback(bucketInfo.buckets, bucketInfo.bucketKey, privateKey, handler);
 
   const decryptBuffer = async () => {
     if (encrypted) {
@@ -58,7 +55,7 @@ export function Filezone({ privateKey, client, bucketInfo }: FilezoneProps) {
   return (
     <div className={styles.filezone}>
       <div className={styles.dropAndInstruction}>
-        <Dropzone uploadCallback={uploadCallback} privateKey={privateKey} />
+        <Dropzone fileCallback={fileCallback} />
         <div className={styles.description}>
           IPFS-DAO encrypts files locally using web crypto before uploading them
           to IPFS. Individuals may then purchase access to files and will

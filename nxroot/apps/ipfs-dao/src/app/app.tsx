@@ -3,10 +3,11 @@ import { ChangeEvent, ChangeEventHandler, useState } from 'react';
 import logo from '../assets/IPFS-DAO-Logo.png';
 import styles from './app.module.css';
 import { Filezone } from './filezone/filezone';
-import { getKeyInfo, loadPrivateKey, clearPrivateKey } from './helpers/crypto';
+import { getKeyInfo, loadPrivateKey, clearPrivateKey, storeApiKey, getApiKey } from './helpers/crypto';
 import { auth, BucketInfo, setupBuckets } from './helpers/buckets';
 
 export function App(props: { privateKey?: PrivateKey }) {
+  const apiKeyState= useState('');
   const [secret, setSecret] = useState('');
   const [loggedOut, setLoggedOut] = useState(false);
   const pkState = useState<PrivateKey>();
@@ -18,6 +19,15 @@ export function App(props: { privateKey?: PrivateKey }) {
 
   let privateKey = pkState[0];
   const setPrivateKey = pkState[1];
+
+  let apiKey = apiKeyState[0];
+  const setApiKey = apiKeyState[1];
+  if (!apiKey) {
+    apiKey = getApiKey() ?? '';
+    if (apiKey) {
+      setApiKey(apiKey);
+    }
+  }
 
   const keyInfo = getKeyInfo();
 
@@ -49,6 +59,7 @@ export function App(props: { privateKey?: PrivateKey }) {
   }
 
   async function updatePrivateKey() {
+    storeApiKey(apiKey);
     if (secret) {
       loadPrivateKey(secret, setPrivateKey);
     } else {
@@ -65,10 +76,13 @@ export function App(props: { privateKey?: PrivateKey }) {
   const handleChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) =>
     setSecret(e.target?.value);
 
+  const handleApiKeyChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) =>
+    setApiKey(e.target?.value);
+
   let mainUi;
   if (!client && clientLoading) {
     return <main><h1 className={styles.loading}>[IPFS-DAO]</h1></main>;
-  } else if (privateKey && client) {
+  } else if (privateKey && client && apiKey && bucketInfo) {
     mainUi = (
       <main>
         <Filezone privateKey={privateKey} client={client} bucketInfo={bucketInfo} />
@@ -86,6 +100,15 @@ export function App(props: { privateKey?: PrivateKey }) {
             placeholder="Secret"
             type="password"
             onChange={handleChange}
+          />
+          <label htmlFor="apiKeyInput">API Key:</label>
+          <input
+            id="apiKeyInput"
+            name="apiKey"
+            value={apiKey}
+            placeholder="API Key"
+            type="text"
+            onChange={handleApiKeyChange}
           />
           <button onClick={() => updatePrivateKey()}>
             Log In with Metamask
